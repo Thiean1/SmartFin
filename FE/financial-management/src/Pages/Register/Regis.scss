@@ -1,0 +1,82 @@
+// Variables
+$primary-color: #1890ff;
+$background-color: #f0f2f5;
+$text-color: #666;
+$white: white;
+$shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin responsive($breakpoint) {
+  @media (max-width: $breakpoint) {
+    @content;
+  }
+}
+
+.register {
+  &-container {
+    @include flex-center;
+    min-height: 100vh;
+    background-color: $background-color;
+    padding: 20px;
+  }
+
+  &-form-container {
+    background: $white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: $shadow;
+    width: 100%;
+    max-width: 400px;
+
+    h2 {
+      text-align: center;
+      color: $primary-color;
+      margin-bottom: 30px;
+      font-size: 24px;
+    }
+  }
+}
+
+.ant {
+  &-form-item {
+    margin-bottom: 24px;
+  }
+
+  &-input-affix-wrapper {
+    border-radius: 4px;
+  }
+
+  &-btn-primary {
+    height: 40px;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 16px;
+  color: $text-color;
+
+  a {
+    color: $primary-color;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Responsive styles
+@include responsive(480px) {
+  .register-form-container {
+    padding: 20px;
+  }
+}
