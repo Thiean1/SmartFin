@@ -14,10 +14,10 @@ const Register = () => {
       setLoading(true);
       // TODO: Add your API call here to register the user
       console.log('Registration values:', values);
-      message.success('Registration successful!');
+      message.success('Đăng ký thành công!');
       navigate('/login');
     } catch (error) {
-      message.error('Registration failed. Please try again.');
+      message.error('Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -26,7 +26,7 @@ const Register = () => {
   return (
     <div className="register-container">
       <div className="register-form-container">
-        <h2>Create Account</h2>
+        <h2>Tạo tài khoản mới</h2>
         <Form
           form={form}
           name="register"
@@ -39,17 +39,17 @@ const Register = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your username!',
+                message: 'Vui lòng nhập tên đăng nhập!',
               },
               {
                 min: 3,
-                message: 'Username must be at least 3 characters!',
+                message: 'Tên đăng nhập phải có ít nhất 3 ký tự!',
               },
             ]}
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="Username"
+              placeholder="Tên đăng nhập"
               size="large"
             />
           </Form.Item>
@@ -59,11 +59,11 @@ const Register = () => {
             rules={[
               {
                 type: 'email',
-                message: 'Please enter a valid email!',
+                message: 'Vui lòng nhập email hợp lệ!',
               },
               {
                 required: true,
-                message: 'Please input your email!',
+                message: 'Vui lòng nhập email của bạn!',
               },
             ]}
           >
@@ -79,18 +79,18 @@ const Register = () => {
             rules={[
               {
                 required: true,
-                message: 'Please input your password!',
+                message: 'Vui lòng nhập mật khẩu!',
               },
               {
                 min: 6,
-                message: 'Password must be at least 6 characters!',
+                message: 'Mật khẩu phải có ít nhất 6 ký tự!',
               },
             ]}
             hasFeedback
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder="Password"
+              placeholder="Mật khẩu"
               size="large"
             />
           </Form.Item>
@@ -102,21 +102,21 @@ const Register = () => {
             rules={[
               {
                 required: true,
-                message: 'Please confirm your password!',
+                message: 'Vui lòng xác nhận mật khẩu!',
               },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('password') === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Passwords do not match!'));
+                  return Promise.reject(new Error('Mật khẩu không khớp!'));
                 },
               }),
             ]}
           >
             <Input.Password
               prefix={<LockOutlined />}
-              placeholder="Confirm Password"
+              placeholder="Xác nhận mật khẩu"
               size="large"
             />
           </Form.Item>
@@ -129,13 +129,13 @@ const Register = () => {
               block
               loading={loading}
             >
-              Register
+              Đăng ký
             </Button>
           </Form.Item>
 
           <div className="login-link">
-            Already have an account?{' '}
-            <a onClick={() => navigate('/login')}>Login here</a>
+            Đã có tài khoản?{' '}
+            <a onClick={() => navigate('/login')}>Đăng nhập ngay</a>
           </div>
         </Form>
       </div>

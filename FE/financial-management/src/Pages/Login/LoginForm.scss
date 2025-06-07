@@ -1,0 +1,161 @@
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+}
+
+.auth__card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(31, 41, 55, 0.15);
+  padding: 24px 16px 20px 16px; // giảm padding
+  width: 100%;
+  max-width: 340px; // giảm max-width
+  transition: box-shadow 0.2s;
+}
+
+.auth__header {
+  text-align: center;
+  margin-bottom: 18px; // giảm margin
+}
+
+.auth__logo {
+  color: #6366f1;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+.auth__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.auth__subtitle {
+  color: #64748b;
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+.auth__tabs {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px; // giảm margin
+  gap: 4px; // giảm gap
+}
+
+.auth__tab {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  padding: 10px 0;
+  border-radius: 8px 8px 0 0;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.auth__tab--active {
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+}
+
+.auth__tab:not(.auth__tab--active):hover {
+  background: #e0e7ff;
+  color: #6366f1;
+}
+
+.auth__content {
+  padding-top: 8px;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; // giảm khoảng cách giữa các trường
+}
+
+.auth__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; // giảm khoảng cách label và input
+}
+
+.auth__label {
+  font-size: 0.98rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.auth__input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 0 12px;
+  border: 1.5px solid #e0e7ef;
+  transition: border 0.2s;
+}
+
+.auth__input-wrapper:focus-within {
+  border: 1.5px solid #6366f1;
+}
+
+.auth__input-icon {
+  color: #94a3b8;
+  margin-right: 8px;
+}
+
+.auth__input {
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 12px 0;
+  font-size: 1rem;
+  flex: 1;
+  color: #1e293b;
+}
+
+.auth__password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  margin-left: 6px;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.auth__password-toggle:hover {
+  color: #6366f1;
+}
+
+.auth__submit {
+  margin-top: 4px; // giảm margin
+  background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0; // giảm padding nút
+  font-size: 1rem; // giảm font-size nút
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.auth__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth__submit:hover:not(:disabled) {
+  background: linear-gradient(90deg, #4f46e5 0%, #0ea5e9 100%);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+}
