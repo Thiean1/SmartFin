@@ -2,31 +2,27 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./Dashboard.scss";
 
-const budgetData = [
-  { name: "Ăn uống", used: 3500000, total: 4000000 },
-  { name: "Giao thông", used: 1200000, total: 1500000 },
-  { name: "Giải trí", used: 800000, total: 1000000 },
-  { name: "Mua sắm", used: 2000000, total: 3000000 },
-];
-
-const goalData = [
-  { name: "Mua xe máy mới", current: 45000000, target: 60000000 },
-  { name: "Quỹ khẩn cấp", current: 25000000, target: 50000000 },
-  { name: "Du lịch Nhật Bản", current: 8000000, target: 30000000 },
-];
-
 export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.ID_nguoi_dung;
   const [transactions, setTransactions] = useState([]);
   const [savings, setSavings] = useState([]);
   const [debts, setDebts] = useState([]);
+  const [budgets, setBudgets] = useState([]);
+  const [goals, setGoals] = useState([]);
 
   useEffect(() => {
     if (!userId) return;
+    // Fetch transactions
     axios.get(`http://localhost:5000/api/giaodich?userId=${userId}`).then(res => setTransactions(res.data));
+    // Fetch savings
     axios.get(`http://localhost:5000/api/saving?userId=${userId}`).then(res => setSavings(res.data));
+    // Fetch debts
     axios.get(`http://localhost:5000/api/quanlyno?userId=${userId}`).then(res => setDebts(res.data));
+    // Fetch budgets
+    axios.get(`http://localhost:5000/api/danhmuc?userId=${userId}`).then(res => setBudgets(res.data));
+    // Fetch goals
+    axios.get(`http://localhost:5000/api/muctieu?userId=${userId}`).then(res => setGoals(res.data));
   }, [userId]);
 
   // Tổng hợp dữ liệu
@@ -66,6 +62,18 @@ export default function Dashboard() {
     },
   ];
 
+  // Tính toán ngân sách từ danh mục
+  const budgetData = budgets.map(budget => {
+    const used = transactions
+      .filter(t => t.ID_danh_muc === budget.ID_danh_muc && t.Loai === "Chi tiêu")
+      .reduce((sum, t) => sum + t.So_tien, 0);
+    return {
+      name: budget.Ten_danh_muc,
+      used: used,
+      total: budget.So_tien_muc_tieu || used * 1.2, // Nếu không có mục tiêu, lấy 120% chi tiêu thực tế
+    };
+  });
+
   return (
     <div className="dashboard">
       <div className="dashboard__stats">
@@ -103,24 +111,24 @@ export default function Dashboard() {
           ))}
         </div>
         <div className="dashboard__section">
-          <div className="dashboard__section-title">Mục tiêu tài chính</div>
-          <div className="dashboard__section-desc">Tiến độ đạt được các mục tiêu đã đặt ra</div>
-          {goalData.map((item) => (
-            <div className="dashboard__progress-row" key={item.name}>
+          <div className="dashboard__section-title">🎯 Mục tiêu tiết kiệm</div>
+          <div className="dashboard__section-desc">Theo dõi tiến độ các mục tiêu</div>
+          {goals.map((goal) => (
+            <div className="dashboard__progress-row" key={goal.ID_muc_tieu}>
               <div className="dashboard__progress-label">
-                {item.name}
+                {goal.Ten_muc_tieu}
                 <span className="dashboard__progress-amount">
-                  {item.current.toLocaleString()} / {item.target.toLocaleString()} đ
+                  {goal.So_tien_da_dat.toLocaleString()} / {goal.So_tien_muc_tieu.toLocaleString()} đ
                 </span>
               </div>
               <div className="dashboard__progress-bar">
                 <div
-                  className="dashboard__progress-bar-inner dashboard__progress-bar-inner--goal"
-                  style={{ width: `${(item.current / item.target) * 100}%` }}
+                  className="dashboard__progress-bar-inner"
+                  style={{ width: `${(goal.So_tien_da_dat / goal.So_tien_muc_tieu) * 100}%` }}
                 ></div>
               </div>
               <div className="dashboard__progress-percent">
-                {((item.current / item.target) * 100).toFixed(1)}% hoàn thành
+                {((goal.So_tien_da_dat / goal.So_tien_muc_tieu) * 100).toFixed(1)}% đã đạt được
               </div>
             </div>
           ))}

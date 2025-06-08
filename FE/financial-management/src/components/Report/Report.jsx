@@ -1,52 +1,127 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import axios from "axios";
 import "./Report.scss";
 
-const categories = [
-  { name: "Ăn uống", budget: 4000000, spent: 3500000 },
-  { name: "Giao thông", budget: 1500000, spent: 1200000 },
-  { name: "Mua sắm", budget: 3000000, spent: 2000000 },
-  { name: "Giải trí", budget: 1000000, spent: 800000 },
-  { name: "Y tế", budget: 1000000, spent: 200000 },
-  { name: "Hóa đơn", budget: 1500000, spent: 1500000 },
-  { name: "Khác", budget: 8000000, spent: 9300000 },
-];
-
-const stats = [
-  { title: "Thu nhập", value: 25000000, color: "green", desc: "+0% so với tháng trước" },
-  { title: "Chi tiêu", value: 18500000, color: "red", desc: "-2.8% so với tháng trước" },
-  { title: "Tiết kiệm", value: 6500000, color: "blue", desc: "+8.3% so với tháng trước" },
-  { title: "Tỷ lệ tiết kiệm", value: "26%", color: "purple", desc: "Mục tiêu: 20%" },
-];
-
-const getStatus = (percent) => {
-  if (percent < 80) return { label: "Tốt", color: "#22c55e" };
-  if (percent < 100) return { label: "Cảnh báo", color: "#f59e42" };
-  return { label: "Vượt ngân sách", color: "#ef4444" };
-};
-
-// Dữ liệu mẫu cho biểu đồ xu hướng
-const trendData = [
-  { month: "1", income: 22000000, spending: 17000000, saving: 5000000 },
-  { month: "2", income: 23000000, spending: 17500000, saving: 5500000 },
-  { month: "3", income: 24000000, spending: 18000000, saving: 6000000 },
-  { month: "4", income: 25000000, spending: 18500000, saving: 6500000 },
-  { month: "5", income: 25500000, spending: 19000000, saving: 6500000 },
-  { month: "6", income: 25000000, spending: 18500000, saving: 6500000 },
-  { month: "7", income: 26000000, spending: 19500000, saving: 7000000 },
-  { month: "8", income: 26500000, spending: 20000000, saving: 7500000 },
-  { month: "9", income: 27000000, spending: 21000000, saving: 8000000 },
-  { month: "10", income: 27500000, spending: 21500000, saving: 8500000 },
-  { month: "11", income: 28000000, spending: 22000000, saving: 9000000 },
-  { month: "12", income: 28500000, spending: 22500000, saving: 9500000 },
-];
-
 export default function Report() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?.ID_nguoi_dung;
   const today = new Date();
   const [selectedDay, setSelectedDay] = useState(today.getDate());
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [activeTab, setActiveTab] = useState("spending");
+  const [transactions, setTransactions] = useState([]);
+  const [savings, setSavings] = useState([]);
+  const [debts, setDebts] = useState([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    // Fetch transactions
+    axios.get(`http://localhost:5000/api/giaodich?userId=${userId}`).then(res => {
+      setTransactions(res.data);
+    });
+    // Fetch savings
+    axios.get(`http://localhost:5000/api/saving?userId=${userId}`).then(res => {
+      setSavings(res.data);
+    });
+    // Fetch debts
+    axios.get(`http://localhost:5000/api/quanlyno?userId=${userId}`).then(res => {
+      setDebts(res.data);
+    });
+  }, [userId]);
+
+  // Calculate total income and expenses
+  const totalIncome = transactions
+    .filter(t => t.Loai === "Thu nhập")
+    .reduce((sum, t) => sum + t.So_tien, 0);
+  
+  const totalExpense = transactions
+    .filter(t => t.Loai === "Chi tiêu")
+    .reduce((sum, t) => sum + t.So_tien, 0);
+
+  // Calculate total savings
+  const totalSaving = savings.reduce((sum, s) => sum + (s.So_tien || 0), 0);
+
+  // Calculate savings rate
+  const savingsRate = totalIncome > 0 ? ((totalSaving / totalIncome) * 100).toFixed(1) + "%" : "0%";
+
+  const stats = [
+    { 
+      title: "Thu nhập", 
+      value: totalIncome, 
+      color: "green", 
+      desc: "Tổng thu nhập thực tế" 
+    },
+    { 
+      title: "Chi tiêu", 
+      value: totalExpense, 
+      color: "red", 
+      desc: "Tổng chi tiêu thực tế" 
+    },
+    { 
+      title: "Tiết kiệm", 
+      value: totalSaving, 
+      color: "blue", 
+      desc: "Tổng tiết kiệm thực tế" 
+    },
+    { 
+      title: "Tỷ lệ tiết kiệm", 
+      value: savingsRate, 
+      color: "purple", 
+      desc: "Mục tiêu: 20%" 
+    },
+  ];
+
+  // Group transactions by category
+  const categoryData = transactions
+    .filter(t => t.Loai === "Chi tiêu")
+    .reduce((acc, t) => {
+      const category = t.Danh_muc || "Khác";
+      if (!acc[category]) {
+        acc[category] = { spent: 0, budget: 0 };
+      }
+      acc[category].spent += t.So_tien;
+      return acc;
+    }, {});
+
+  const categories = Object.entries(categoryData).map(([name, data]) => ({
+    name,
+    spent: data.spent,
+    budget: data.budget || data.spent * 1.2, // Default budget if not set
+  }));
+
+  // Generate trend data from transactions
+  const trendData = Array.from({ length: 12 }, (_, i) => {
+    const month = i + 1;
+    const monthTransactions = transactions.filter(t => {
+      const date = new Date(t.Ngay);
+      return date.getMonth() + 1 === month && date.getFullYear() === selectedYear;
+    });
+
+    const income = monthTransactions
+      .filter(t => t.Loai === "Thu nhập")
+      .reduce((sum, t) => sum + t.So_tien, 0);
+
+    const spending = monthTransactions
+      .filter(t => t.Loai === "Chi tiêu")
+      .reduce((sum, t) => sum + t.So_tien, 0);
+
+    const saving = income - spending;
+
+    return {
+      month: month.toString(),
+      income,
+      spending,
+      saving,
+    };
+  });
+
+  const getStatus = (percent) => {
+    if (percent < 80) return { label: "Tốt", color: "#22c55e" };
+    if (percent < 100) return { label: "Cảnh báo", color: "#f59e42" };
+    return { label: "Vượt ngân sách", color: "#ef4444" };
+  };
 
   return (
     <div className="report-page">
@@ -81,7 +156,9 @@ export default function Report() {
         {stats.map((s, idx) => (
           <div className={`report-stat-card report-stat-card--${s.color}`} key={idx}>
             <div className="report-stat-title">{s.title}</div>
-            <div className="report-stat-value">{typeof s.value === 'number' ? s.value.toLocaleString('vi-VN') + ' đ' : s.value}</div>
+            <div className="report-stat-value">
+              {typeof s.value === 'number' ? s.value.toLocaleString('vi-VN') + ' đ' : s.value}
+            </div>
             <div className="report-stat-desc">{s.desc}</div>
           </div>
         ))}
@@ -105,11 +182,16 @@ export default function Report() {
                   <span className="report-category-name">{cat.name}</span>
                   <span className="report-category-status" style={{ color: status.color }}>{status.label}</span>
                   <span className="report-category-amount">{cat.spent.toLocaleString('vi-VN')} đ</span>
-                  <span className="report-category-percent">{((cat.spent / 18500000) * 100).toFixed(1)}% tổng chi tiêu</span>
+                  <span className="report-category-percent">
+                    {((cat.spent / totalExpense) * 100).toFixed(1)}% tổng chi tiêu
+                  </span>
                 </div>
                 <div className="report-category-budget">Ngân sách: {cat.budget.toLocaleString('vi-VN')} đ</div>
                 <div className="report-category-progress-bar">
-                  <div className="report-category-progress-bar-inner" style={{ width: percent + '%', background: status.color }} />
+                  <div 
+                    className="report-category-progress-bar-inner" 
+                    style={{ width: percent + '%', background: status.color }} 
+                  />
                 </div>
                 <div className="report-category-progress-label">{percent}% đã sử dụng</div>
               </div>
@@ -137,7 +219,6 @@ export default function Report() {
           </div>
         </div>
       )}
-      {/* Các tab khác có thể bổ sung sau */}
     </div>
   );
 } 

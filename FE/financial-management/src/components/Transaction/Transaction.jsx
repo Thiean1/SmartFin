@@ -20,6 +20,9 @@ export default function Transaction() {
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const transactionsPerPage = 5;
+  const [allCategories, setAllCategories] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -42,6 +45,20 @@ export default function Transaction() {
 
     fetchCategories();
   }, [userId, form.Loai]);
+  
+  // Fetch all categories (không lọc theo loại)
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      if (!userId) return;
+      try {
+        const res = await axios.get(`http://localhost:5000/api/danhmuc?userId=${userId}`);
+        setAllCategories(res.data);
+      } catch (err) {
+        setAllCategories([]);
+      }
+    };
+    fetchAllCategories();
+  }, [userId]);
   
   console.log({
     ID_nguoi_dung: userId,
@@ -67,6 +84,7 @@ export default function Transaction() {
 
   useEffect(() => {
     fetchGiaoDich();
+    setCurrentPage(1);
     // eslint-disable-next-line
   }, [userId]);
 
@@ -147,6 +165,17 @@ export default function Transaction() {
     setEditingId(transaction.ID_giao_dich);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Khi fetch lại dữ liệu, reset về trang 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [transactions.length]);
+
+  // Tính toán phân trang
+  const indexOfLast = currentPage * transactionsPerPage;
+  const indexOfFirst = indexOfLast - transactionsPerPage;
+  const currentTransactions = transactions.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(transactions.length / transactionsPerPage);
 
   return (
     <div className="transaction-page">
@@ -242,7 +271,7 @@ export default function Transaction() {
                 </tr>
               </thead>
               <tbody>
-                {transactions.map(tran => (
+                {currentTransactions.map(tran => (
                   <tr key={tran.ID_giao_dich} className={tran.Loai === "Thu nhập" ? "income-row" : "expense-row"}>
                     <td>{new Date(tran.Ngay_giao_dich).toLocaleDateString('vi-VN')}</td>
                     <td>
@@ -250,24 +279,32 @@ export default function Transaction() {
                         {tran.Loai}
                       </span>
                     </td>
-                    <td>{categories.find(c => c.ID_danh_muc === tran.ID_danh_muc)?.Ten_danh_muc || tran.ID_danh_muc}</td>
+                    <td>
+                      {allCategories.find(cat => Number(cat.ID_danh_muc) === Number(tran.ID_danh_muc))?.Ten_danh_muc || tran.ID_danh_muc}
+                    </td>
                     <td className={tran.Loai === "Thu nhập" ? "income-amount" : "expense-amount"}>
                       {tran.So_tien?.toLocaleString('vi-VN')} đ
                     </td>
                     <td>{tran.Ghi_chu}</td>
                     <td>
-                      <div className="transaction-actions">
+                      <div className="transaction-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         <button 
                           className="transaction-edit-btn"
+                          style={{ minWidth: '48px', height: '32px', padding: '0 12px', borderRadius: '6px', border: '1px solid #b6e0fe', background: '#e0f2fe', color: '#1677ff', fontWeight: 500, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s, color 0.2s' }}
                           onClick={() => handleEdit(tran)}
                           title="Sửa giao dịch"
+                          onMouseOver={e => { e.currentTarget.style.background = '#bae6fd'; e.currentTarget.style.color = '#0958d9'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = '#e0f2fe'; e.currentTarget.style.color = '#1677ff'; }}
                         >
                           Sửa
                         </button>
                         <button 
                           className="transaction-delete-btn"
+                          style={{ minWidth: '48px', height: '32px', padding: '0 12px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fee2e2', color: '#e53e3e', fontWeight: 500, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s, color 0.2s' }}
                           onClick={() => handleDelete(tran.ID_giao_dich)}
                           title="Xóa giao dịch"
+                          onMouseOver={e => { e.currentTarget.style.background = '#fecaca'; e.currentTarget.style.color = '#b91c1c'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#e53e3e'; }}
                         >
                           Xóa
                         </button>
@@ -277,6 +314,33 @@ export default function Transaction() {
                 ))}
               </tbody>
             </table>
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16, gap: 8 }}>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1677ff', fontWeight: 500, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                >
+                  Trước
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #e5e7eb', background: currentPage === i + 1 ? '#1677ff' : '#fff', color: currentPage === i + 1 ? '#fff' : '#1677ff', fontWeight: 500, cursor: 'pointer' }}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1677ff', fontWeight: 500, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                >
+                  Sau
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

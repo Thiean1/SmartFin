@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { Brain } from "lucide-react";
 import "./AIAdvisor.scss";
 
@@ -16,17 +17,46 @@ const suggestions = [
   "Tôi có nên mua bảo hiểm không?",
 ];
 
+const SYSTEM_PROMPT = "Bạn là một chuyên viên phân tích tài chính. Hãy trả lời ngắn gọn, dễ hiểu, thực tế và phù hợp với người Việt Nam.";
+
 export default function AIAdvisor() {
   const [tab, setTab] = useState("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    setMessages([...messages, { role: "user", text: input }]);
+    if (!input.trim() || isLoading) return;
+
+    const userMsg = { role: "user", text: input };
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
-    // TODO: Gọi API AI trả lời và push vào messages
+    setIsLoading(true);
+
+    try {
+      const res = await axios.post("http://localhost:5000/api/ai", {
+        prompt: `${SYSTEM_PROMPT}\n${input}`
+      });
+      
+      if (res.data.error) {
+        throw new Error(res.data.error);
+      }
+
+      const aiMsg = { 
+        role: "ai", 
+        text: res.data.answer || "Xin lỗi, tôi chưa có câu trả lời." 
+      };
+      setMessages(prev => [...prev, aiMsg]);
+    } catch (err) {
+      console.error("AI Chat Error:", err);
+      setMessages(prev => [...prev, { 
+        role: "ai", 
+        text: "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau." 
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSuggestion = (text) => {
@@ -74,9 +104,18 @@ export default function AIAdvisor() {
               placeholder="Đặt câu hỏi về tài chính..."
               value={input}
               onChange={e => setInput(e.target.value)}
+              disabled={isLoading}
             />
-            <button type="submit" className="ai-advisor__send-btn">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <button 
+              type="submit" 
+              className={`ai-advisor__send-btn ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="loading-spinner"></div>
+              ) : (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              )}
             </button>
           </form>
         </div>

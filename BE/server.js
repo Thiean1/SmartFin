@@ -10,6 +10,7 @@ const quanLyNoRoutes = require("./routes/quanlyno");
 const tuVanAIRoutes = require("./routes/tuvanai");
 const phanHoiRoutes = require("./routes/phanhoi");
 const userRoutes = require("./routes/user");
+const aiRoutes = require("./routes/ai");
 
 const app = express();
 app.use(cors());
@@ -23,6 +24,7 @@ app.use("/api/quanlyno", quanLyNoRoutes);
 app.use("/api/tuvanai", tuVanAIRoutes);
 app.use("/api/phanhoi", phanHoiRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/ai", aiRoutes);
 
 sequelize
   .authenticate()
