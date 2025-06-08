@@ -1,0 +1,140 @@
+.dashboard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.dashboard__stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.dashboard__stat {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  position: relative;
+  &-icon {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    font-size: 1.5rem;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+  &-title {
+    font-size: 1rem;
+    color: #888;
+    font-weight: 500;
+  }
+  &-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #222;
+  }
+  &-desc {
+    font-size: 0.95rem;
+    font-weight: 500;
+    &--green { color: #16a34a; }
+    &--red { color: #e53e3e; }
+    &--blue { color: #1677ff; }
+    &--orange { color: #f59e42; }
+  }
+  &--green { border-left: 4px solid #16a34a; }
+  &--red { border-left: 4px solid #e53e3e; }
+  &--blue { border-left: 4px solid #1677ff; }
+  &--orange { border-left: 4px solid #f59e42; }
+}
+
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.dashboard__section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 24px 28px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  &-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 2px;
+  }
+  &-desc {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 10px;
+  }
+}
+
+.dashboard__progress-row {
+  margin-bottom: 12px;
+}
+.dashboard__progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+.dashboard__progress-amount {
+  font-size: 0.95rem;
+  color: #888;
+  font-weight: 400;
+}
+.dashboard__progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  &-inner {
+    height: 100%;
+    background: linear-gradient(90deg, #1677ff 60%, #42a5f5 100%);
+    border-radius: 6px;
+    transition: width 0.4s;
+  }
+  &-inner--goal {
+    background: linear-gradient(90deg, #16a34a 60%, #4ade80 100%);
+  }
+}
+.dashboard__progress-percent {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard__stats {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+@media (max-width: 700px) {
+  .dashboard {
+    gap: 16px;
+  }
+  .dashboard__section {
+    padding: 12px 4px 8px 4px;
+  }
+} 

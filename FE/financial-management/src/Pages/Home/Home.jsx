@@ -1,157 +1,120 @@
-import React, { useState } from 'react';
-import { Layout, Menu, Card, Row, Col, Progress, Button } from 'antd';
-import {
-  HomeOutlined, DollarOutlined, RobotOutlined, BarChartOutlined,
-  WalletOutlined, FundOutlined, LineChartOutlined, UserOutlined, LogoutOutlined
-} from '@ant-design/icons';
-import './Home.scss';
-
-const { Sider, Content } = Layout;
+import React, { useEffect, useState } from "react"
+import { Brain } from "lucide-react"
+import { useNavigate, Outlet, useLocation } from "react-router-dom"
+import AvatarDropdown from "../../components/AvatarDropdown"
+import "./Home.scss"
 
 const menuItems = [
-  { key: 'dashboard', icon: <HomeOutlined />, label: 'Dashboard' },
-  { key: 'spending', icon: <DollarOutlined />, label: 'Thu Chi' },
-  { key: 'ai', icon: <RobotOutlined />, label: 'AI Tư vấn' },
-  { key: 'budget', icon: <BarChartOutlined />, label: 'Ngân sách' },
-  { key: 'debt', icon: <WalletOutlined />, label: 'Quản lý nợ' },
-  { key: 'saving', icon: <FundOutlined />, label: 'Tiết kiệm & Đầu tư' },
-  { key: 'report', icon: <LineChartOutlined />, label: 'Báo cáo' },
-];
+  { key: "dashboard", icon: "🏠", label: "Dashboard", path: "/home" },
+  { key: "spending", icon: "💸", label: "Thu Chi", path: "/home/spending" },
+  { key: "ai", icon: "🤖", label: "AI Tư vấn", path: "/home/ai" },
+  { key: "budget", icon: "📊", label: "Ngân sách", path: "/home/budget" },
+  { key: "debt", icon: "💳", label: "Quản lý nợ", path: "/home/debt" },
+  { key: "saving", icon: "💰", label: "Tiết kiệm & Đầu tư", path: "/home/saving" },
+  { key: "report", icon: "📈", label: "Báo cáo", path: "/home/report" },
+]
 
 const budgetData = [
-  { name: 'Ăn uống', used: 3500000, total: 4000000 },
-  { name: 'Giao thông', used: 1200000, total: 1500000 },
-  { name: 'Giải trí', used: 800000, total: 1000000 },
-  { name: 'Mua sắm', used: 2000000, total: 3000000 },
-];
+  { name: "Ăn uống", used: 3500000, total: 4000000 },
+  { name: "Giao thông", used: 1200000, total: 1500000 },
+  { name: "Giải trí", used: 800000, total: 1000000 },
+  { name: "Mua sắm", used: 2000000, total: 3000000 },
+]
 
 const goalData = [
-  { name: 'Mua xe máy mới', current: 45000000, target: 60000000 },
-  { name: 'Quỹ khẩn cấp', current: 25000000, target: 50000000 },
-  { name: 'Du lịch Nhật Bản', current: 8000000, target: 30000000 },
-];
+  { name: "Mua xe máy mới", current: 45000000, target: 60000000 },
+  { name: "Quỹ khẩn cấp", current: 25000000, target: 50000000 },
+  { name: "Du lịch Nhật Bản", current: 8000000, target: 30000000 },
+]
 
-const Home = () => {
-  const [collapsed, setCollapsed] = useState(false);
+const statCards = [
+  {
+    title: "Tổng thu nhập tháng này",
+    value: "25,000,000 đ",
+    desc: "+12% so với tháng trước",
+    color: "green",
+    icon: "📈",
+  },
+  {
+    title: "Tổng chi tiêu tháng này",
+    value: "18,500,000 đ",
+    desc: "+8% so với tháng trước",
+    color: "red",
+    icon: "📉",
+  },
+  {
+    title: "Tiết kiệm tháng này",
+    value: "6,500,000 đ",
+    desc: "+15% so với tháng trước",
+    color: "blue",
+    icon: "💰",
+  },
+  {
+    title: "Tổng nợ hiện tại",
+    value: "12,000,000 đ",
+    desc: "-5% so với tháng trước",
+    color: "orange",
+    icon: "💳",
+  },
+]
+
+export default function Home() {
+  const [user, setUser] = useState({ name: "User", email: "user@email.com" })
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user")
+    if (userData) {
+      setUser(JSON.parse(userData))
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem("user")
+    navigate("/login")
+  }
 
   return (
-    <Layout className="dashboard-layout">
-      <Sider
-        width={250}
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        className="dashboard-sider"
-      >
-        <div className="logo">
-          <span role="img" aria-label="logo" className="logo-icon">🤖</span>
-          {!collapsed && <span className="logo-text">SmartFinance</span>}
+    <div className="home-layout">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar__logo">
+          <Brain size={28} />
+          <span>SmartFinance</span>
         </div>
-        <Menu
-          mode="inline"
-          defaultSelectedKeys={['dashboard']}
-          style={{ borderRight: 0, marginTop: 16 }}
-        >
-          {menuItems.map(item => (
-            <Menu.Item key={item.key} icon={item.icon}>
-              {item.label}
-            </Menu.Item>
+        <nav className="sidebar__menu">
+          {menuItems.map((item) => (
+            <div
+              key={item.key}
+              className={`sidebar__menu-item${location.pathname === item.path ? " active" : ""}`}
+              onClick={() => navigate(item.path)}
+              style={{ userSelect: 'none' }}
+            >
+              <span className="sidebar__menu-icon">{item.icon}</span>
+              <span>{item.label}</span>
+            </div>
           ))}
-        </Menu>
-        <div className="user-info">
-          <UserOutlined style={{ fontSize: 24, marginRight: 8 }} />
-          <span>User</span>
-          <Button type="text" icon={<LogoutOutlined />} style={{ marginLeft: 'auto' }} />
+        </nav>
+        <div className="sidebar__user">
+          <AvatarDropdown user={user} onLogout={handleLogout}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div className="sidebar__user-avatar">
+                {(user.name || user.Ho_va_ten || user.ho_va_ten || "U").charAt(0).toUpperCase()}
+              </div>
+              <div className="sidebar__user-info">
+                <div className="sidebar__user-name">{user.name}</div>
+                <div className="sidebar__user-email">{user.Email}</div>
+              </div>
+            </div>
+          </AvatarDropdown>
         </div>
-      </Sider>
-      <Layout>
-        <Content className="dashboard-content">
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={6}>
-              <Card className="stat-card">
-                <div className="stat-title">Tổng thu nhập tháng này</div>
-                <div className="stat-value green">25,000,000 đ</div>
-                <div className="stat-desc green">+12% so với tháng trước</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card className="stat-card">
-                <div className="stat-title">Tổng chi tiêu tháng này</div>
-                <div className="stat-value red">18,500,000 đ</div>
-                <div className="stat-desc red">+8% so với tháng trước</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card className="stat-card">
-                <div className="stat-title">Tiết kiệm tháng này</div>
-                <div className="stat-value blue">6,500,000 đ</div>
-                <div className="stat-desc blue">+15% so với tháng trước</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card className="stat-card">
-                <div className="stat-title">Tổng nợ hiện tại</div>
-                <div className="stat-value orange">12,000,000 đ</div>
-                <div className="stat-desc orange">-5% so với tháng trước</div>
-              </Card>
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-            <Col xs={24} md={12}>
-              <Card>
-                <div className="section-title">🧭 Tiến độ ngân sách tháng này</div>
-                <div className="section-desc">Theo dõi chi tiêu theo từng danh mục</div>
-                {budgetData.map(item => (
-                  <div key={item.name} className="progress-row">
-                    <div className="progress-label">
-                      {item.name}
-                      <span className="progress-amount">
-                        {item.used.toLocaleString()} / {item.total.toLocaleString()} đ
-                      </span>
-                    </div>
-                    <Progress
-                      percent={Math.round((item.used / item.total) * 100)}
-                      showInfo={false}
-                      strokeColor="#222"
-                      trailColor="#eee"
-                    />
-                    <div className="progress-percent">
-                      {((item.used / item.total) * 100).toFixed(1)}% đã sử dụng
-                    </div>
-                  </div>
-                ))}
-              </Card>
-            </Col>
-            <Col xs={24} md={12}>
-              <Card>
-                <div className="section-title">Mục tiêu tài chính</div>
-                <div className="section-desc">Tiến độ đạt được các mục tiêu đã đặt ra</div>
-                {goalData.map(item => (
-                  <div key={item.name} className="progress-row">
-                    <div className="progress-label">
-                      {item.name}
-                      <span className="progress-amount">
-                        {item.current.toLocaleString()} / {item.target.toLocaleString()} đ
-                      </span>
-                    </div>
-                    <Progress
-                      percent={Math.round((item.current / item.target) * 100)}
-                      showInfo={false}
-                      strokeColor="#222"
-                      trailColor="#eee"
-                    />
-                    <div className="progress-percent">
-                      {((item.current / item.target) * 100).toFixed(1)}% hoàn thành
-                    </div>
-                  </div>
-                ))}
-              </Card>
-            </Col>
-          </Row>
-        </Content>
-      </Layout>
-    </Layout>
-  );
-};
+      </aside>
 
-export default Home;
+      {/* Main Content */}
+      <main className="main-content">
+        <Outlet />
+      </main>
+    </div>
+  )
+}

@@ -1,10 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
 import { Brain, Mail, Lock, User, Eye, EyeOff } from "lucide-react"
 import "./LoginForm.scss"
 
-export default function LoginForm({ onLogin, setUser }) {
+export default function LoginForm() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("login")
@@ -14,52 +17,51 @@ export default function LoginForm({ onLogin, setUser }) {
     confirmPassword: "",
     fullName: "",
   })
+  const [error, setError] = useState("")
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-
-    // Dữ liệu giả
-    const fakeUser = {
-      email: "test@gmail.com",
-      password: "123456",
-      name: "Nguyễn Văn A",
-    }
-
-    setTimeout(() => {
-      if (
-        formData.email === fakeUser.email &&
-        formData.password === fakeUser.password
-      ) {
-        setUser({
-          email: fakeUser.email,
-          name: fakeUser.name,
-        })
-        onLogin(true)
-      } else {
-        alert("Email hoặc mật khẩu không đúng!")
-      }
+    setError("")
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      })
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem('user', JSON.stringify(res.data.user))
+      localStorage.setItem('isLoggedIn', 'true')
+      navigate("/home")
+    } catch (err) {
+      setError(err.response?.data?.message || "Đăng nhập thất bại!")
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const handleRegister = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError("")
     if (formData.password !== formData.confirmPassword) {
-      alert("Mật khẩu không khớp!")
+      setError("Mật khẩu không khớp!")
+      setIsLoading(false)
       return
     }
-    setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setUser({
+    try {
+      await axios.post("http://localhost:5000/api/auth/register", {
+        ho_va_ten: formData.fullName,
         email: formData.email,
-        name: formData.fullName,
+        password: formData.password,
+        // Có thể bổ sung ngày sinh, thu_nhap_hang_thang nếu muốn
       })
-      onLogin(true)
+      setActiveTab("login")
+      setError("Đăng ký thành công! Vui lòng đăng nhập.")
+    } catch (err) {
+      setError(err.response?.data?.message || "Đăng ký thất bại!")
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const handleForgotPassword = async (e) => {
@@ -135,6 +137,7 @@ export default function LoginForm({ onLogin, setUser }) {
                   </button>
                 </div>
               </div>
+              {error && <div style={{color: 'red', fontSize: '0.98rem'}}>{error}</div>}
               <button type="submit" className="auth__submit" disabled={isLoading}>
                 {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
